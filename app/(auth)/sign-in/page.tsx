@@ -1,9 +1,6 @@
+import AuthForm from '@/components/AuthForm'
 import React from 'react'
 
-const Signin = () => {
-  return (
-    <div>Signin</div>
-  )
-}
+const Signin = () => <AuthForm type='sign-in' />
 
 export default Signin
