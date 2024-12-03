@@ -1,11 +1,12 @@
 "use server"
 
 import { ID, Query } from "node-appwrite";
-import { createAdminClient } from "..";
+import { createAdminClient, createSessionClient } from "..";
 import { appWriteConfig } from "../appwrite/config";
 import { parseStringify } from "../utils";
 import { cookies } from "next/headers";
 import path from "path";
+import { avatarPlaceholderUrl } from "@/constants";
 
 const getUserByEmail = async (email: string) => {
     const { databases} = await createAdminClient();
@@ -53,7 +54,7 @@ export const createAccount = async ({fullName, email} : {fullName: string; email
             {
                 fullName,
                 email,
-                avatar: "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png",
+                avatar: avatarPlaceholderUrl,
                 accountId
             }
         )
@@ -79,4 +80,20 @@ export const verifySecret = async ({accountId, password} : {accountId : string; 
   } catch (error) {
     handleError(error, 'Failed to verify OTO')
   } 
+}
+
+export const getCurrentUser =async () => {
+    const {databases, account} = await createSessionClient();
+
+    const result = await account.get();
+
+    const user = await databases.listDocuments(
+        appWriteConfig.databaseId,
+        appWriteConfig.usersCollectionsId,
+        [Query.equal("accountId", result.$id)]
+    )
+
+    if (user.total <= 0) return null;
+
+    return parseStringify(user.documents[0])
 }
